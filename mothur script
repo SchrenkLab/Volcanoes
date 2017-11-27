@@ -1,0 +1,16 @@
+#mothur SOP from P. Schloss
+#H Miller
+#2017.11.27
+
+#QC fastq files FIRST
+
+
+#from within HPCC after accessing a development node
+[mill2735@dev-intel16-k80 ~]$ module load mothur
+
+#RESPONSE: This is the multi-threaded non-MPI version of Mothur. See: https://wiki.hpcc.msu.edu/display/Bioinfo/Mothur+-+MPI+versus+Non-MPI+Versions
+
+[mill2735@dev-intel16-k80 ~]$ mothur
+
+mothur > make.file(inputdir=MiSeq_SOP, type=fastq, prefix=stability)
+mothur > make.contigs(file=stability.files, processors=8)
