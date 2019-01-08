@@ -17,7 +17,8 @@ ssh -X [node-name]
 
 [mill2735@dev-intel16-k80 ~]$ mothur
 
-mothur > make.file(inputdir=[MiSeq_SOP], type=fastq, prefix=stability)
+###### make sure inputdir is the location of the raw data on HPCC: REFERENCE FOLDER HEIRARCHY...16S_rRNA/data/raw; 16S_rRNA/data/MSU-RTSF_V4/2018.../folders of fastq.files
+mothur > make.file(inputdir=data/raw/, type=fastq, prefix=stability)
 mothur > make.contigs(file=stability.files, processors=8)
 mothur > summary.seqs(fasta=stability.trim.contigs.fasta)
 
