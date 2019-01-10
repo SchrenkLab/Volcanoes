@@ -3,6 +3,7 @@
 #2017.11.27
 
 #QC fastq files FIRST
+# MAKE SURE VSEARCH is loaded before starting script...and that it's loaded when you're in the 16S directory
 
 # Open a secure shell (SSH) connection to MSU gateway node, hpcc.msu.edu.  In Linux, Unix or Mac OSX, simply type the following in a terminal window:
 ssh -X [username]@hpcc.msu.edu
@@ -10,15 +11,38 @@ ssh -X [username]@hpcc.msu.edu
 # Then, ssh to a development node with (low) usage.  Refer to HPCC wiki for descriptions of the nodes and how many processors (CPUs) each support (https://wiki.hpcc.msu.edu/display/hpccdocs/Connecting+to+the+HPCC)
 ssh -X [node-name]
 
-# from within HPCC after accessing a development node
-[mill2735@dev-intel16-k80 ~]$ module load mothur
+# from within HPCC after accessing a development node[mill2735@dev-intel16-k80 ~]$ 
+module purge
+module load icc/2017.1.132-GCC-6.3.0-2.27 impi/2017.1.132 Mothur/1.40.3-nonMPI-Python-2.7.13        # Mothur non-MPI version
 
-#RESPONSE: This is the multi-threaded non-MPI version of Mothur. See: https://wiki.hpcc.msu.edu/display/Bioinfo/Mothur+-+MPI+versus+Non-MPI+Versions
+# set-up for running mothur ***need to make sure 'batch.m' file contains follow-on code or just run code direct*** 8 processors
+#### this doesn't seem to be necessary/allowed
+#mothur batch.m.       #non-MPI
+#set.current(fasta=ex.trim.contigs.good.unique.good.filter.unique.precluster.pick.pick.subsample.fasta, count=ex.trim.contigs.good.unique.good.filter.unique.precluster.uchime.pick.pick.subsample.count_table,  processors=1)
+#dist.seqs(fasta=current, cutoff=0.2, processors=8)
+
+# on HPCC 2019-01-09 ********R:
+#----------------------------------------------------------------------------
+#   Description:
+      R is a free software environment for statistical computing and
+      graphics.
+
+     Versions:
+        R/3.3.1
+        R/3.4.3-X11-20160819
+        R/3.4.3-X11-20171023
+        R/3.4.3xF
+        R/3.4.3xS
+        R/3.5.0-X11-20180131
+        R/3.5.1-X11-20180131
+        R/3.5.1-X11-20180604
+
 
 [mill2735@dev-intel16-k80 ~]$ mothur
 
 ###### make sure inputdir is the location of the raw data on HPCC: REFERENCE FOLDER HEIRARCHY...16S_rRNA/data/raw; 16S_rRNA/data/MSU-RTSF_V4/2018.../folders of fastq.files
-mothur > make.file(inputdir=data/raw/, type=fastq, prefix=stability)
+mothur > make.file(inputdir=data/raw/, type=fastq, prefix=stability) 
+# mothur > make.file(inputdir=gzTest, type=gz)
 mothur > make.contigs(file=stability.files, processors=8)
 mothur > summary.seqs(fasta=stability.trim.contigs.fasta)
 
@@ -27,16 +51,16 @@ mothur > screen.seqs(fasta=stability.trim.contigs.fasta, group=stability.contigs
 mothur > get.current()
 #mothur > summary.seqs(fasta=stability.trim.contigs.good.fasta)
 #mothur > summary.seqs(fasta=current)
-#mothur > summary.seqs()
 
 mothur > unique.seqs(fasta=stability.trim.contigs.good.fasta)
 mothur > count.seqs(name=stability.trim.contigs.good.names, group=stability.contigs.good.groups)
 mothur > summary.seqs(count=stability.trim.contigs.good.count_table)
-mothur > pcr.seqs(fasta=silva.v128.fasta, start=11894, end=25319, keepdots=F, processors=8)
-#mothur > rename.file(input=silva.bacteria.pcr.fasta, new=silva.v4.fasta)
+mothur > pcr.seqs(fasta=data/references/silva.seed_v132.align, start=11894, end=25319, keepdots=F, processors=8)
+mothur > system(mv data/references/silva.seed_v132.pcr.align data/references/silva.v4.fasta)
+#didn't run/not in EDAMAME demo mothur > rename.file(input=silva.bacteria.pcr.fasta, new=silva.v4.fasta)
 
-mothur > summary.seqs(fasta=silva.v128.fasta)
-mothur > align.seqs(fasta=stability.trim.contigs.good.unique.fasta, reference=silva.v128.fasta)
+mothur > summary.seqs(fasta=data/references/silva.v4.fasta)
+mothur > align.seqs(fasta=stability.trim.contigs.good.unique.fasta, reference=data/references/silva.v4.fasta)
 mothur > summary.seqs(fasta=stability.trim.contigs.good.unique.align, count=stability.trim.contigs.good.count_table)
 
 mothur > screen.seqs(fasta=stability.trim.contigs.good.unique.align, count=stability.trim.contigs.good.count_table, summary=stability.trim.contigs.good.unique.summary, start=1968, end=11550, maxhomop=8)
@@ -45,6 +69,7 @@ mothur > summary.seqs(fasta=current, count=current)
 mothur > filter.seqs(fasta=stability.trim.contigs.good.unique.good.align, vertical=T, trump=.)
 mothur > unique.seqs(fasta=stability.trim.contigs.good.unique.good.filter.fasta, count=stability.trim.contigs.good.good.count_table)
 mothur > pre.cluster(fasta=stability.trim.contigs.good.unique.good.filter.unique.fasta, count=stability.trim.contigs.good.unique.good.filter.count_table, diffs=2)
+STOPPED
 mothur > chimera.vsearch(fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta, count=stability.trim.contigs.good.unique.good.filter.unique.precluster.count_table, dereplicate=t)
 mothur > remove.seqs(fasta=stability.trim.contigs.good.unique.good.filter.unique.precluster.fasta, accnos=stability.trim.contigs.good.unique.good.filter.unique.precluster.denovo.vsearch.accnos)
 
